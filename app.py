@@ -4,7 +4,7 @@ from model.NNClassifier import NNClassifier
 from flask_cors import CORS
 app = Flask(__name__)
 
-# CORS(app, origins='http://localhost:3000')
+CORS(app, origins='https://classtication.web.app')
 
 @app.route('/api/classify_image', methods=['POST'])
 def classify_image():
