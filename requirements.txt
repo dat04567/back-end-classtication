@@ -1,0 +1,8 @@
+scipy
+flask
+PyWavelets
+opencv-python
+numpy
+joblib
+flask_cors
+tqdm

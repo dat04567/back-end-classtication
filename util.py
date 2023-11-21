@@ -4,7 +4,6 @@ import numpy as np
 import base64
 import cv2
 from wavelet import w2d
-import pickle
 from model.NNClassifier import NNClassifier
 
 __class_name_to_number = {}
