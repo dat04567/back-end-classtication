@@ -6,7 +6,7 @@ from .util import *
 def create_app():
     
     app = Flask(__name__)
-    CORS(app, origins='http://localhost:3000')
+    CORS(app, origins='https://classtication.web.app/')
     
     @app.route('/api/classify_image', methods=['POST'])
    
