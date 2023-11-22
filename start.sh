@@ -1,24 +1,15 @@
-#!/bin/bash
-
-# Exit early on errors
-set -eu
-
-# Python buffers stdout. Without this, you won't see what you "print" in the Activity Logs
-export PYTHONUNBUFFERED=true
-
-# Install Python 3 virtual env
-VIRTUALENV=.data/venv
-
-if [ ! -d $VIRTUALENV ]; then
-  python3 -m venv $VIRTUALENV
+if [ -f "v/bin/activate" ]
+then
+    echo virtual env already created
+else
+    virtualenv v
 fi
+source v/bin/activate
 
-if [ ! -f $VIRTUALENV/bin/pip ]; then
-  curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | $VIRTUALENV/bin/python
-fi
+# Just install dependencies by default to pick up any changes
+pip install -r requirements.txt
 
-# Install the requirements
-$VIRTUALENV/bin/pip install -r requirements.txt
+#
+# run the data server
 
-# Run a glorious Python 3 server
-$VIRTUALENV/bin/python3 index.py
+python index.py
