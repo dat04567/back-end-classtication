@@ -1,5 +1,8 @@
-import numpy as np
 from scipy.special import expit
+import numpy as np
+import re
+import sys
+# from gunicorn.app.wsgiapp import run
 from tqdm.notebook import tqdm_notebook
 
 
@@ -40,13 +43,10 @@ def cross_entropy(label,pred):
    yl = np.mean(yl)
    return yl
 
- 
 class NNClassifier:
-
     def __init__(self, n_classes, n_features, n_hidden_units=30,
-                 l1=0.0, l2=0.0, epochs=500, learning_rate=0.01,
-                 n_batches=1, random_seed=None):
-
+                    l1=0.0, l2=0.0, epochs=500, learning_rate=0.01,
+                    n_batches=1, random_seed=None):
         if random_seed:
             np.random.seed(random_seed)
         self.n_classes = n_classes
@@ -61,12 +61,12 @@ class NNClassifier:
 
     def _init_weights(self):
         w1 = np.random.uniform(-1.0, 1.0,
-                               size=(self.n_hidden_units, self.n_features))   
-   
+                                size=(self.n_hidden_units, self.n_features))   
+
         w2 = np.random.uniform(-1.0, 1.0,
-                               size=(self.n_classes, self.n_hidden_units))    
+                                size=(self.n_classes, self.n_hidden_units))    
         return w1, w2
-      
+        
     def _forward(self, X):
         net_input = X.copy()
         net_hidden = self.w1.dot(net_input.T)
@@ -74,7 +74,7 @@ class NNClassifier:
         net_out = self.w2.dot(act_hidden)
         act_out = sigmoid(net_out)
         return net_input, net_hidden, act_hidden, net_out, act_out
-    
+
     def _backward(self, net_input, net_hidden, act_hidden, act_out, y):
         sigma3 = act_out - y
         sigma2 = self.w2.T.dot(sigma3) * sigmoid_prime(net_hidden)
@@ -87,7 +87,7 @@ class NNClassifier:
         L2_term = L2_reg(self.l2, self.w1, self.w2)
         error = cross_entropy(output, y) + L1_term + L2_term
         return 0.5 * np.mean(error)
-     
+        
     def _backprop_step(self, X, y):
         net_input, net_hidden, act_hidden, net_out, act_out = self._forward(X)
         y = y.T
@@ -106,7 +106,7 @@ class NNClassifier:
         Xt = X.copy()
         net_input, net_hidden, act_hidden, net_out, act_out = self._forward(Xt)
         return mle(net_out.T)
-    
+
     def predict_proba(self, X):
         Xt = X.copy()
         net_input, net_hidden, act_hidden, net_out, act_out = self._forward(Xt)
@@ -132,8 +132,9 @@ class NNClassifier:
                 self.w2 -= (self.learning_rate * grad2)
             self.error_.append(np.mean(epoch_errors))
         return self
-    
+
     def score(self, X, y):
         y_hat = self.predict(X)
         return np.sum(y == y_hat, axis=0) / float(X.shape[0])
-     
+
+    
