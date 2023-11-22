@@ -1,13 +1,14 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask_cors import CORS,cross_origin    
 from .util import *
 
 
 def create_app():
     
     app = Flask(__name__)
-    CORS(app, origins='https://classtication.web.app/')
-    
+    app.config["CORS_HEADERS"] = "Content-Type"
+    CORS(app)
+    @cross_origin(origin="*", headers=["Content-Type"])
     @app.route('/api/classify_image', methods=['POST'])
    
     def classify_image():
