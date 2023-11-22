@@ -5,12 +5,49 @@ import base64
 import cv2
 import joblib
 from .wavelet import w2d
-from .NNClassifier import NNClassifier
+from scipy.special import expit
 
 __class_name_to_number = {}
 __class_number_to_name = {}
 
-__model = None
+__parameters = {}
+
+
+def mle(y, axis=1):
+    return np.argmax(y, 1)
+
+
+def softmax(x):
+    exp_scores = np.exp(x)
+    return exp_scores / np.sum(exp_scores)
+
+def sigmoid(z):
+    return expit(z)
+
+def forward_propagation(X, parameters):
+    # retrieve the parameters
+    W1, b1, W2, b2 = parameters['W1'], parameters['b1'], parameters['W2'], parameters['b2']
+    
+    # compute the activation of the hidden layer
+    Z1 = np.dot(W1, X.T) + b1
+    A1 = sigmoid(Z1)
+    
+    # compute the activation of the output layer
+    Z2 = np.dot(W2, A1) + b2
+    A2 = sigmoid(Z2)
+    
+    cache = {"Z1": Z1, "A1": A1, "Z2": Z2, "A2": A2}
+    
+    return A2, cache
+
+
+def predict(X,parameters ):
+   A2 , _ = forward_propagation(X, parameters)
+   return mle(A2.T)
+
+def predict_proba(X, parameters):
+   A2 , _ = forward_propagation(X, parameters)
+   return softmax(A2.T)
 
 def classify_image_predict(image_base64_data, file_path=None):
     imgs = get_cropped_image_if_2_eyes(file_path, image_base64_data)
@@ -23,8 +60,8 @@ def classify_image_predict(image_base64_data, file_path=None):
         len_image_array = 32*32*3 + 32*32
         final = combined_img.reshape(1,len_image_array).astype(float)
         result.append({
-            'class': class_number_to_name(__model.predict(final)[0]),
-            'class_probability': np.around(__model.predict_proba(final)*100,2).tolist()[0],
+            'class': class_number_to_name(predict(final, __parameters)[0]),
+            'class_probability': np.around(predict_proba(final, __parameters)*100,2).tolist()[0],
             'class_dictionary': __class_name_to_number
         })
     return result
@@ -39,13 +76,14 @@ def load_saved_artifacts():
     with open("./my_app/artifacts/class_dictionary.json", "r") as f:
         __class_name_to_number = json.load(f)
         __class_number_to_name = {v:k for k,v in __class_name_to_number.items()}
-    global __model
+    global __parameters 
     
-    if __model is None:
-        with open('./my_app/model/saved_model.pkl', 'rb') as f:
-            from .NNClassifier import NNClassifier
-            __model = joblib.load(f)
-    
+    if not __parameters :
+        with open('./my_app/model/parameters.json', 'rb') as f:
+            model = json.load(f)
+        for key, value in model.items():
+            __parameters[key] = np.array(value)
+            
     print("loading saved artifacts...done")
 
 
@@ -82,4 +120,4 @@ def get_b64_test_image_for_virat():
 
 if __name__ == '__main__':
     load_saved_artifacts()
-    # print(classify_image(None, "./test/messi.jpeg"))
+    # print(classify_image_predict(None, "./test/messi.jpeg"))

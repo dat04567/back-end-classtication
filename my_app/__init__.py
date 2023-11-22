@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from .util import *
-from  .NNClassifier import NNClassifier
+
 
 def create_app():
     
     app = Flask(__name__)
-    CORS(app, origins='https://classtication.web.app')
+    CORS(app, origins='http://localhost:3000')
     
     @app.route('/api/classify_image', methods=['POST'])
    
